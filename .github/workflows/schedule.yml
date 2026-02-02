@@ -23,4 +23,6 @@ jobs:
         run: pip install requests
 
       - name: 스크립트 실행
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python test.py
