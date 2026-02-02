@@ -23,4 +23,4 @@ jobs:
         run: pip install requests
 
       - name: 스크립트 실행
-        run: python main.py
+        run: python test.py
