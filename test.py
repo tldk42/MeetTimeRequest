@@ -4,8 +4,8 @@ import json
 import os
 
 # ==========================================
-# [설정 구역] 본인의 디스코드 웹훅 URL을 다시 넣어주세요!
-DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL')\
+# [보안 설정] 깃허브 금고(Secrets)에서 주소를 가져옵니다.
+DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL')
 # ==========================================
 
 def get_next_wednesday():
@@ -18,6 +18,11 @@ def get_next_wednesday():
     return next_wed.strftime("%Y-%m-%d")
 
 def create_meeting_and_notify():
+    # 웹훅 URL이 제대로 설정되었는지 확인
+    if not DISCORD_WEBHOOK_URL:
+        print("❌ 오류: 디스코드 웹훅 URL을 찾을 수 없습니다. Github Secrets 설정을 확인해주세요.")
+        return
+
     target_date = get_next_wednesday()
     print(f"📅 목표 날짜: {target_date}")
 
@@ -45,13 +50,11 @@ def create_meeting_and_notify():
         if response.status_code in [200, 201]:
             data = response.json()
             
-            # [수정된 부분] ID가 숨어있는 정확한 위치를 찾아갑니다
-            # 구조: {'data': {'meet': {'_id': '...'}}}
+            # ID가 숨어있는 정확한 위치를 찾아갑니다
             room_id = None
             try:
                 room_id = data['data']['meet']['_id']
             except (KeyError, TypeError):
-                # 만약 구조가 또 바뀌었을 경우를 대비한 안전장치
                 pass
 
             if not room_id:
@@ -65,3 +68,31 @@ def create_meeting_and_notify():
                 f"?title=%ED%9A%8C%EC%9D%98"
                 f"&startDate={target_date}&endDate={target_date}"
                 f"&startTime=9&endTime=24"
+            )
+
+            discord_payload = {
+                "content": (
+                    f"📢 **{target_date} 수요 회의 시간 조율**\n"
+                    f"매주 수요일 정기 알림입니다.\n\n"
+                    f"👇 **아래 링크 클릭**\n{final_link}"
+                )
+            }
+            
+            print("📨 디스코드 전송 시도 중...")
+            discord_res = requests.post(DISCORD_WEBHOOK_URL, json=discord_payload)
+            
+            if discord_res.status_code == 204:
+                print("✅ 디스코드 전송 완료! (204 No Content)")
+            else:
+                print(f"❌ 디스코드 전송 실패! 상태 코드: {discord_res.status_code}")
+                print(f"내용: {discord_res.text}")
+            
+        else:
+            print(f"❌ 방 생성 실패 (Status: {response.status_code})")
+            print(f"응답 본문: {response.text}")
+
+    except Exception as e:
+        print(f"❌ 에러 발생: {e}")
+
+if __name__ == "__main__":
+    create_meeting_and_notify()
