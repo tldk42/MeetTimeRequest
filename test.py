@@ -4,7 +4,7 @@ import json
 
 # ==========================================
 # [설정 구역] 아래 주소를 본인의 디스코드 웹훅 URL로 바꿔주세요
-DISCORD_WEBHOOK_URL = "여기에_웹훅_URL을_붙여넣으세요"
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1467905849442959564/ckjFHrZ2fgE9mdaFIbCzIolho7boUjS1LcmmUfT-a9TDlataETSFXHN3k0s1QkMpy9fQ"
 # ==========================================
 
 def get_next_wednesday():
